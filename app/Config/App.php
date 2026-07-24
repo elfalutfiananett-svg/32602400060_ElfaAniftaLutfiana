@@ -63,6 +63,29 @@ class App extends BaseConfig
 
     /**
      * --------------------------------------------------------------------------
+     * Permitted URI Characters
+     * --------------------------------------------------------------------------
+     *
+     * This lets you specify which characters are allowed in your URLs.
+     * When someone tries to submit a URL with disallowed characters they will
+     * get a warning message.
+     *
+     * As a security measure you are STRONGLY encouraged to restrict URLs to
+     * as few characters as possible.
+     *
+     * By default, only these are allowed: `a-z 0-9~%.:_\-`
+     * Leave blank to allow all characters -- but only if you are insane.
+     *
+     * The configured value is actually a regex character group
+     * and target of preg_quote(), so you should escape characters
+     * accordingly.
+     *
+     * DO NOT CHANGE THIS UNLESS YOU FULLY UNDERSTAND THE REPERCUSSIONS!!
+     */
+    public string $permittedURIChars = 'a-z 0-9~%.:_\-';
+
+    /**
+     * --------------------------------------------------------------------------
      * Default Locale
      * --------------------------------------------------------------------------
      *
