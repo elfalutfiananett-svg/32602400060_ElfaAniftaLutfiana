@@ -22,7 +22,7 @@ $routes->set404Override();
  * --------------------------------------------------------------------
  */
 
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Buku::index');
 
 // CRUD Buku
 $routes->get('/buku', 'Buku::index');
