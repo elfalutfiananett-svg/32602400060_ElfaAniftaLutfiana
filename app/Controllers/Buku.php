@@ -3,19 +3,15 @@
 namespace App\Controllers;
 
 use App\Models\Buku_model;
+use CodeIgniter\Database\Config;
 
 class Buku extends BaseController
 {
-    protected $bukuModel;
-
-    public function __construct()
-    {
-        $this->bukuModel = new Buku_model();
-    }
-
     // Menampilkan semua data buku dengan fitur pencarian & filter
     public function index()
     {
+        $bukuModel = new Buku_model();
+
         $keyword = $this->request->getGet('keyword');
         $filter  = $this->request->getGet('filter') ?? 'judul';
         $sort    = $this->request->getGet('sort') ?? 'asc';
@@ -33,7 +29,7 @@ class Buku extends BaseController
 
         // Query pencarian
         if ($keyword) {
-            $this->bukuModel
+            $bukuModel
                 ->like('judul', $keyword)
                 ->orLike('penulis', $keyword)
                 ->orLike('penerbit', $keyword)
@@ -41,7 +37,7 @@ class Buku extends BaseController
         }
 
         // Urutkan
-        $data['buku']    = $this->bukuModel->orderBy($filter, $sort)->findAll();
+        $data['buku']    = $bukuModel->orderBy($filter, $sort)->findAll();
         $data['keyword'] = $keyword;
         $data['filter']  = $filter;
         $data['sort']    = $sort;
@@ -58,7 +54,9 @@ class Buku extends BaseController
     // Proses simpan buku baru
     public function simpan()
     {
-        $this->bukuModel->insert([
+        $bukuModel = new Buku_model();
+
+        $bukuModel->insert([
             'judul'        => $this->request->getPost('judul'),
             'penulis'      => $this->request->getPost('penulis'),
             'penerbit'     => $this->request->getPost('penerbit'),
@@ -69,10 +67,15 @@ class Buku extends BaseController
         return redirect()->to('/buku');
     }
 
-    // Form edit buku
-    public function edit($id = null)
+    // Form edit buku - ambil ID dari URI segment
+    public function edit(...$params)
     {
-        $buku = $this->bukuModel->find($id);
+        // Ambil ID dari parameter atau dari URI segment ke-3
+        $id = $params[0] ?? $this->request->getUri()->getSegment(3);
+
+        // Query langsung dengan DB builder untuk menghindari masalah CI4 model
+        $db = Config::connect();
+        $buku = $db->table('buku')->where('id', (int)$id)->get()->getRowArray();
 
         if (!$buku) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Data buku tidak ditemukan.');
@@ -87,21 +90,26 @@ class Buku extends BaseController
     {
         $id = $this->request->getPost('id');
 
-        $this->bukuModel->set([
+        // Query langsung dengan DB builder
+        $db = Config::connect();
+        $db->table('buku')->where('id', (int)$id)->update([
             'judul'        => $this->request->getPost('judul'),
             'penulis'      => $this->request->getPost('penulis'),
             'penerbit'     => $this->request->getPost('penerbit'),
             'tahun_terbit' => $this->request->getPost('tahun'),
-        ])->where('id', $id)->update();
+        ]);
 
         session()->setFlashdata('pesan', 'Data buku berhasil diperbarui!');
         return redirect()->to('/buku');
     }
 
     // Hapus buku
-    public function hapus($id = null)
+    public function hapus(...$params)
     {
-        $this->bukuModel->where('id', $id)->delete();
+        $id = $params[0] ?? $this->request->getUri()->getSegment(3);
+
+        $db = Config::connect();
+        $db->table('buku')->where('id', (int)$id)->delete();
 
         session()->setFlashdata('pesan', 'Data buku berhasil dihapus!');
         return redirect()->to('/buku');
