@@ -95,6 +95,13 @@
 
     <!-- Tabel Data Buku -->
     <div class="glass-card">
+        <?php if (session()->getFlashdata('pesan')): ?>
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.1rem;"></i>
+                <span style="color: #065f46; font-weight: 500; font-size: 0.9rem;"><?= session()->getFlashdata('pesan'); ?></span>
+            </div>
+        <?php endif; ?>
+
         <table class="table-dark-custom">
             <thead>
                 <tr>

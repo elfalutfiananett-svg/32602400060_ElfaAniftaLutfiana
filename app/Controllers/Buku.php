@@ -6,72 +6,75 @@ use App\Models\Buku_model;
 
 class Buku extends BaseController
 {
-    protected $buku;
+    protected $bukuModel;
 
     public function __construct()
     {
-        $this->buku = new Buku_model();
+        $this->bukuModel = new Buku_model();
     }
 
-
-    // Menampilkan data
+    // Menampilkan semua data buku
     public function index()
     {
-        $data['buku'] = $this->buku->findAll();
-
+        $data['buku'] = $this->bukuModel->findAll();
         return view('buku/index', $data);
     }
 
-
-    // Form tambah
+    // Form tambah buku
     public function tambah()
     {
         return view('buku/tambah');
     }
 
-
-    // Simpan data
+    // Proses simpan buku baru
     public function simpan()
     {
-        $this->buku->insert([
-            'judul' => $this->request->getPost('judul'),
-            'penulis' => $this->request->getPost('penulis'),
-            'penerbit' => $this->request->getPost('penerbit'),
-            'tahun_terbit' => $this->request->getPost('tahun')
+        $this->bukuModel->insert([
+            'judul'        => $this->request->getPost('judul'),
+            'penulis'      => $this->request->getPost('penulis'),
+            'penerbit'     => $this->request->getPost('penerbit'),
+            'tahun_terbit' => $this->request->getPost('tahun'),
         ]);
 
+        session()->setFlashdata('pesan', 'Data buku berhasil ditambahkan!');
         return redirect()->to('/buku');
     }
 
-
-    // Form edit
-    public function edit($id)
+    // Form edit buku
+    public function edit($id = null)
     {
-        $data['buku'] = $this->buku->find($id);
+        $buku = $this->bukuModel->find($id);
 
+        if (!$buku) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Data buku tidak ditemukan.');
+        }
+
+        $data['buku'] = $buku;
         return view('buku/edit', $data);
     }
 
-
-    // Update data
-    public function update($id)
+    // Proses update buku
+    public function update()
     {
-        $this->buku->update($id, [
-            'judul' => $this->request->getPost('judul'),
-            'penulis' => $this->request->getPost('penulis'),
-            'penerbit' => $this->request->getPost('penerbit'),
-            'tahun_terbit' => $this->request->getPost('tahun')
-        ]);
+        $id = $this->request->getPost('id');
 
+        $this->bukuModel->set([
+            'judul'        => $this->request->getPost('judul'),
+            'penulis'      => $this->request->getPost('penulis'),
+            'penerbit'     => $this->request->getPost('penerbit'),
+            'tahun_terbit' => $this->request->getPost('tahun'),
+        ])->where('id', $id)->update();
+
+        session()->setFlashdata('pesan', 'Data buku berhasil diperbarui!');
         return redirect()->to('/buku');
     }
 
-
-    // Hapus data
-    public function hapus($id)
+    // Hapus buku
+    public function hapus($id = null)
     {
-        $this->buku->delete($id);
+        $this->bukuModel->where('id', $id)->delete();
 
+        session()->setFlashdata('pesan', 'Data buku berhasil dihapus!');
         return redirect()->to('/buku');
     }
 }
