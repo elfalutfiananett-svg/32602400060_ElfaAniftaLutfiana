@@ -13,10 +13,39 @@ class Buku extends BaseController
         $this->bukuModel = new Buku_model();
     }
 
-    // Menampilkan semua data buku
+    // Menampilkan semua data buku dengan fitur pencarian & filter
     public function index()
     {
-        $data['buku'] = $this->bukuModel->findAll();
+        $keyword = $this->request->getGet('keyword');
+        $filter  = $this->request->getGet('filter') ?? 'judul';
+        $sort    = $this->request->getGet('sort') ?? 'asc';
+
+        // Validasi filter dan sort
+        $allowedFilters = ['judul', 'penulis', 'penerbit', 'tahun_terbit'];
+        $allowedSorts   = ['asc', 'desc'];
+
+        if (!in_array($filter, $allowedFilters)) {
+            $filter = 'judul';
+        }
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'asc';
+        }
+
+        // Query pencarian
+        if ($keyword) {
+            $this->bukuModel
+                ->like('judul', $keyword)
+                ->orLike('penulis', $keyword)
+                ->orLike('penerbit', $keyword)
+                ->orLike('tahun_terbit', $keyword);
+        }
+
+        // Urutkan
+        $data['buku']    = $this->bukuModel->orderBy($filter, $sort)->findAll();
+        $data['keyword'] = $keyword;
+        $data['filter']  = $filter;
+        $data['sort']    = $sort;
+
         return view('buku/index', $data);
     }
 
